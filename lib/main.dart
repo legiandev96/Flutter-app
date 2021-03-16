@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
 
+import 'package:flutter_application/pages/login.dart';
+import 'package:flutter_application/pages/home.dart';
+import 'package:flutter_application/services/auth.dart';
+import 'package:flutter_application/providers/user.provider.dart';
+import 'package:flutter_application/shares/shared_preference.dart';
+import 'package:flutter_application/models/user.dart';
+import 'package:provider/provider.dart';
 void main() {
   runApp(MyApp());
 }
@@ -9,127 +15,39 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.yellow,
-      ),
-      home: RandomWords(),
-    );
-  }
-}
-
-class RandomWords extends StatefulWidget {
-  @override
-  _RandomWordsState createState() => _RandomWordsState();
-}
-
-class _RandomWordsState extends State<RandomWords> {
-  final suggestions = <WordPair>[];
-  final biggerFont = TextStyle(fontSize: 18.0);
-  final _saved = <WordPair>{};
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.notifications_active),
-          onPressed: () {
-            showAlert(context);
-          }
-        ),
-        title: Align( 
-          child: Text(
-            'Startup',
-            style: TextStyle(
-              color: Colors.blue,
-              fontSize: 16,
-            ),
+    Future<User> getUserData() => UserPreferences().getUser();
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+      ],
+      child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
-          alignment: Alignment.center
-        ),
-        actions: [
-          IconButton(icon: Icon(Icons.list), onPressed: _pushSaved),
-        ],
-      ),
-      body: buildSuggestions(),
+          home: FutureBuilder(
+            future: getUserData(),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.none:
+                case ConnectionState.waiting:
+                  return CircularProgressIndicator();
+                default:
+                  if (snapshot.hasError)
+                    return Text('Error: ${snapshot.error}');
+                  else if (snapshot.data.token == null)
+                    return Login();
+                  else
+                    return Home(user: snapshot.data);
+              }
+            }
+          ),
+          routes: {
+            'login': (BuildContext context) => new Login(),
+            'home': (BuildContext context) => new Home(),
+          }),
     );
-  }
-
-  Widget buildSuggestions() {
-    return ListView.builder(
-      padding: EdgeInsets.all(10.0),
-      itemBuilder: (context, i) {
-        if (i.isOdd) return Divider();
-
-        final index = i ~/ 2;
-        if (index >= suggestions.length) {
-          suggestions.addAll(generateWordPairs().take(10));
-        }
-        return _buildRow(suggestions[index]);
-      }
-    );
-  }
-
-  Widget _buildRow(WordPair pair) {
-    final alreadySaved = _saved.contains(pair);
-    return ListTile(
-      title: Text(
-        pair.asPascalCase,
-        style: biggerFont,
-      ),
-      trailing: Icon(   // NEW from here... 
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-      ), 
-      onTap: () {      // NEW lines from here...
-        setState(() {
-          if (alreadySaved) {
-            _saved.remove(pair);
-          } else { 
-            _saved.add(pair); 
-          } 
-        });
-      },
-    );
-  }
-
-  void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        // NEW lines from here...
-        builder: (BuildContext context) {
-          final tiles = _saved.map(
-            (WordPair pair) {
-              return ListTile(
-                title: Text(
-                  pair.asPascalCase,
-                  style: biggerFont,
-                ),
-              );
-            },
-          );
-          final divided = ListTile.divideTiles(
-            context: context,
-            tiles: tiles,
-          ).toList();
-
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Saved Suggestions'),
-            ),
-            body: ListView(children: divided),
-          );
-        }, // ...to here.
-      ),
-    );
-  }
-
-   void showAlert(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          content: Text("Hi"),
-        ));
   }
 }
