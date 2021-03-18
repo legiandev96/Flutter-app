@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application/models/user.dart';
 import 'package:flutter_application/services/auth.dart';
 import 'package:flutter_application/providers/user.provider.dart';
-// import 'package:flutter_application/utils/validators.dart';
-// import 'package:flutter_application/utils/widgets.dart';
 import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
@@ -23,9 +21,13 @@ class _LoginState extends State<Login> {
 
     final usernameField = TextFormField(
       autofocus: false,
-      // validator: validateEmail,
+      validator: (value) => value.isEmpty ? "Please enter ID" : null,
       onSaved: (value) => _username = value,
-      // decoration: buildInputDecoration("Confirm password", Icons.email),
+      decoration: const InputDecoration(
+        icon: Icon(Icons.account_circle),
+        hintText: 'Enter ID',
+        labelText: 'ID *',
+      ),
     );
 
     final passwordField = TextFormField(
@@ -33,7 +35,11 @@ class _LoginState extends State<Login> {
       obscureText: true,
       validator: (value) => value.isEmpty ? "Please enter password" : null,
       onSaved: (value) => _password = value,
-      // decoration: buildInputDecoration("Confirm password", Icons.lock),
+      decoration: const InputDecoration(
+        icon: Icon(Icons.lock),
+        hintText: 'Enter password',
+        labelText: 'Password *',
+      ),
     );
 
     var loading = Row(
@@ -45,23 +51,25 @@ class _LoginState extends State<Login> {
     );
 
     final forgotLabel = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: <Widget>[
-//         FlatButton(
-//           padding: EdgeInsets.all(0.0),
-//           child: Text("Forgot password?",
-//               style: TextStyle(fontWeight: FontWeight.w300)),
-//           onPressed: () {
-// //            Navigator.pushReplacementNamed(context, '/reset-password');
-//           },
-//         ),
-//         FlatButton(
-//           padding: EdgeInsets.only(left: 0.0),
-//           child: Text("Sign up", style: TextStyle(fontWeight: FontWeight.w300)),
-//           onPressed: () {
-//             Navigator.pushReplacementNamed(context, '/register');
-//           },
-//         ),
+        // ignore: deprecated_member_use
+        FlatButton(
+          padding: EdgeInsets.all(0.0),
+          child: Text("Forgot password?",
+          style: TextStyle(fontWeight: FontWeight.w300)),
+          onPressed: () {
+           Navigator.pushReplacementNamed(context, '/reset-password');
+          },
+        ),
+        // ignore: deprecated_member_use
+        FlatButton(
+          padding: EdgeInsets.only(left: 0.0),
+          child: Text("Sign up", style: TextStyle(fontWeight: FontWeight.w300)),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/register');
+          },
+        ),
       ],
     );
 
@@ -102,12 +110,10 @@ class _LoginState extends State<Login> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: 250.0),
-                  Text("ID"),
+                  SizedBox(height: 200.0),
                   SizedBox(height: 5.0),
                   usernameField,
                   SizedBox(height: 20.0),
-                  Text("Password"),
                   SizedBox(height: 5.0),
                   passwordField,
                   SizedBox(height: 20.0),
@@ -118,9 +124,17 @@ class _LoginState extends State<Login> {
                           minWidth: 70.0, 
                           color: Theme.of(context).primaryColor, 
                           textColor: Colors.white, 
-                          child: new Text("Login"), 
                           onPressed: () => doLogin(), 
                           splashColor: Colors.redAccent,
+                          elevation: 5.0,
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Login",
+                              style: TextStyle(fontSize: 20.0),
+                              textAlign: TextAlign.center
+                            ),
+                          )
                         ),
                   SizedBox(height: 5.0),
                   forgotLabel
