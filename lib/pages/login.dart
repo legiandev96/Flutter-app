@@ -79,8 +79,7 @@ class _LoginState extends State<Login> {
       if (form.validate()) {
         form.save();
 
-        final Future<Map<String, dynamic>> successfulMessage =
-            auth.login(_username, _password);
+        final Future<Map<String, dynamic>> successfulMessage = auth.login(_username, _password);
 
         successfulMessage.then((response) {
           if (response['status']) {
@@ -88,11 +87,12 @@ class _LoginState extends State<Login> {
             Provider.of<UserProvider>(context, listen: false).setUser(user);
             Navigator.of(context).pushNamed('home');
           } else {
-            Flushbar(
+            var flushbar = Flushbar(
               title: "Failed Login",
-              message: response['message']['message'].toString(),
-              duration: Duration(seconds: 3),
-            ).show(context);
+              message: response['message'].toString(),
+              duration: Duration(seconds: 5),
+            );
+            flushbar.show(context);
           }
         });
       } else {

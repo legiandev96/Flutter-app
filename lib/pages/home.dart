@@ -3,7 +3,8 @@ import 'package:flutter_application/models/user.dart';
 import 'package:flutter_application/providers/user.provider.dart';
 import 'package:provider/provider.dart';
 import 'package:english_words/english_words.dart';
-import 'package:flutter_application/shares/shared_preference.dart';
+import 'package:flushbar/flushbar.dart';
+import 'package:flutter_application/services/auth.dart';
 
 class Home extends StatelessWidget {
   final User user;
@@ -27,6 +28,24 @@ class _RandomWordsState extends State<RandomWords> {
   final _saved = <WordPair>{};
   @override
   Widget build(BuildContext context) {
+    AuthProvider auth = Provider.of<AuthProvider>(context);
+    
+    var doLogout = () {
+      final Future<Map<String, dynamic>> successfulMessage = auth.logout();
+      successfulMessage.then((response) {
+        if (response['status']) {
+          Navigator.of(context).pushNamed('login');
+        } else {
+          var flushbar = Flushbar(
+            title: "Error systerm",
+            message: "Logout failed!",
+            duration: Duration(seconds: 5),
+          );
+          flushbar.show(context);
+        }
+      });
+    };
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -54,7 +73,7 @@ class _RandomWordsState extends State<RandomWords> {
           ),
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: logout
+            onPressed: () => doLogout()
           ),
         ],
       ),
@@ -122,7 +141,7 @@ class _RandomWordsState extends State<RandomWords> {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text('Saved Suggestions'),
+              title: Text('Your Cart'),
             ),
             body: ListView(children: divided),
           );
@@ -137,10 +156,5 @@ class _RandomWordsState extends State<RandomWords> {
       builder: (context) => AlertDialog(
       content: Text("Hi Gian"),
     ));
-  }
-
-  void logout() {
-    UserPreferences().removeUser();
-    Navigator.of(context).pushNamed('login');
   }
 }
